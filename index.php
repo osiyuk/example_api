@@ -211,7 +211,7 @@ if ('/photo/upload' == $_SERVER['REQUEST_URI']) {
 	should_be($jpg_or_png, 'image', 'jpg or png only');
 
 	$fname = 'assets/' . $tmp_name;
-	should_be(move_uploaded_file($tmp_name, $fname));
+	should_be(move_uploaded_file($tmp_name, $fname), 'upload', 'cancelled');
 
 	$magazine['image'] = '/' . $fname;
 	$update = (new Magazine)->update($_POST['magazine_key'], $magazine);
@@ -232,6 +232,8 @@ case '/author/add':
 	method_should_be('POST');
 	should_be_set('first_name', $in);
 	should_be_set('second_name', $in);
+	$name_length = strlen($in['second_name']);
+	should_be($name_length > 2, 'second_name', 'too short');
 
 	$author_key = (new Author)->create($in);
 	$author_key > 0 ? response('author_key', $author_key) : error('not created');
@@ -240,6 +242,10 @@ case '/author/add':
 case '/author/update':
 	method_should_be('POST');
 	should_be_set('author_key', $in);
+	if (isset($in['second_name'])) {
+		$name_length = strlen($in['second_name']);
+		should_be($name_length > 2, 'second_name', 'too short');
+	}
 
 	$author_key = $in['author_key'];
 	unset($in['author_key']);
